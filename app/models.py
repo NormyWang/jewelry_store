@@ -51,12 +51,3 @@ class Order(Base):
     # Relationships
     user = relationship("User", back_populates="orders")
     products = relationship("Product", secondary=order_products, back_populates="orders")
-
-# Database URL
-SQLALCHEMY_DATABASE_URL = "postgresql://postgres:password@localhost/jewelry_store_db"
-
-# Connect to the database
-engine = create_engine(SQLALCHEMY_DATABASE_URL)
-
-# Create tables in the database
-Base.metadata.create_all(bind=engine)

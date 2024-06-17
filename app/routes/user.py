@@ -1,34 +1,23 @@
-from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
-from app.data import users
-from app.models import User
+# app/routes/user.py
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
+from app.models import User as DBUser
+from app.schemas import User, UserLogin  # Import the UserLogin schema
+from app.database import get_db
 
 router = APIRouter()
 
-class UserRegistrationData(BaseModel):
-    username: str
-    password: str
-    email: str
-    address: str
+@router.post("/register", response_model=User)
+def register_user(user: User, db: Session = Depends(get_db)):
+    db_user = DBUser(username=user.username, password=user.password, email=user.email, address=user.address)
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    return user
 
-class UserLoginData(BaseModel):
-    username: str
-    password: str
-
-@router.post("/users/register")
-async def register_user(user_data: UserRegistrationData):
-    for user in users:
-        if user.username == user_data.username:
-            raise HTTPException(status_code=400, detail="Username already exists")
-    new_user = User(user_data.username, user_data.password, user_data.email, user_data.address)
-    users.append(new_user)
-    return {"message": "User registered successfully"}
-
-@router.post("/users/login")
-async def login(user_data: UserLoginData):
-    username = user_data.username
-    password = user_data.password
-    for user in users:
-        if user.username == username and user.password == password:
-            return {"access_token": "dummy_token", "token_type": "bearer"}
-    raise HTTPException(status_code=401, detail="Invalid username or password")
+@router.post("/login")
+def login(user_data: UserLogin, db: Session = Depends(get_db)):  # Use the UserLogin schema
+    db_user = db.query(DBUser).filter(DBUser.username == user_data.username, DBUser.password == user_data.password).first()
+    if db_user is None:
+        raise HTTPException(status_code=401, detail="Invalid username or password")
+    return {"access_token": "dummy_token", "token_type": "bearer"}

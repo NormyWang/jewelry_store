@@ -4,17 +4,19 @@ from datetime import datetime
 
 # Pydantic model for User
 class User(BaseModel):
-    id: int
     username: str
-    email: str
+    email: Optional[str]
     address: Optional[str]
-
+    password: str
     class Config:
         orm_mode = True
 
+class UserLogin(BaseModel):
+    username: str
+    password: str
+    
 # Pydantic model for Product
 class Product(BaseModel):
-    id: int
     name: str
     description: Optional[str]
     price: int
