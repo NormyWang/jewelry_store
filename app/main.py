@@ -10,6 +10,10 @@ from pydantic import BaseModel
 
 # Import SQLAlchemy models and database setup from models.py
 from app.models import User as DBUser, Product as DBProduct, Order as DBOrder, engine, Base
+from app.routes.user import router as users_router
+from app.routes.product import router as products_router
+from app.routes.order import router as orders_router
+f
 
 # Import Pydantic models
 from app.schemas import User, Product, Order
@@ -36,6 +40,12 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+# Mount the users router
+app.include_router(users_router, prefix="/users")
+app.include_router(products_router, prefix="/products")
+app.include_router(orders_router, prefix="/orders")
 
 # Dependency to get DB session
 def get_db():
