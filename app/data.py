@@ -1,4 +1,6 @@
-from app.models import Product
+from app.models.user_model import User as DBUser
+from app.models.product_model import Product as DBProduct
+from app.models.order_model import Order as DBOrder
 
 users = []
 products = []

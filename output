@@ -1,80 +1,81 @@
 file: /Users/qingwang/learning/python/jewelry_store/app/routes/user.py
-from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
-from app.data import users
-from app.models import User
+# app/routes/user.py
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
+from app.models import User as DBUser
+from app.schemas import User
+from app.database import get_db  # Import the get_db dependency
 
 router = APIRouter()
 
-class UserRegistrationData(BaseModel):
-    username: str
-    password: str
-    email: str
-    address: str
+@router.post("/register", response_model=User)
+def register_user(user: User, db: Session = Depends(get_db)):
+    db_user = DBUser(username=user.username, password=user.password, email=user.email, address=user.address)
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    return user
 
-class UserLoginData(BaseModel):
-    username: str
-    password: str
-
-@router.post("/users/register")
-async def register_user(user_data: UserRegistrationData):
-    for user in users:
-        if user.username == user_data.username:
-            raise HTTPException(status_code=400, detail="Username already exists")
-    new_user = User(user_data.username, user_data.password, user_data.email, user_data.address)
-    users.append(new_user)
-    return {"message": "User registered successfully"}
-
-@router.post("/users/login")
-async def login(user_data: UserLoginData):
-    username = user_data.username
-    password = user_data.password
-    for user in users:
-        if user.username == username and user.password == password:
-            return {"access_token": "dummy_token", "token_type": "bearer"}
-    raise HTTPException(status_code=401, detail="Invalid username or password")
+@router.post("/login")
+def login(user_data: User, db: Session = Depends(get_db)):
+    db_user = db.query(DBUser).filter(DBUser.username == user_data.username, DBUser.password == user_data.password).first()
+    if db_user is None:
+        raise HTTPException(status_code=401, detail="Invalid username or password")
+    return {"access_token": "dummy_token", "token_type": "bearer"}
 
 file: /Users/qingwang/learning/python/jewelry_store/app/routes/order.py
-from fastapi import APIRouter, HTTPException
-from app.data import orders, users, products
-from app.models import Order
+# app/routes/order.py
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
 from datetime import datetime
+from app.models import Order as DBOrder, Product as DBProduct
+from app.schemas import Order
+from app.database import get_db  # Import the get_db dependency
 
 router = APIRouter()
 
-@router.post("/")
-async def create_order(username: str, product_ids: list[int], quantities: list[int]):
-    user = next((user for user in users if user.username == username), None)
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-    
-    if len(product_ids) != len(quantities):
-        raise HTTPException(status_code=400, detail="Product IDs and quantities must match in length")
-    
-    order_id = len(orders) + 1
-    order_date = datetime.now().isoformat()
-    new_order = Order(order_id, user.username, product_ids, quantities, order_date)
-    orders.append(new_order)
-    return {"message": "Order created successfully", "order_id": order_id}
-
+@router.post("/", response_model=Order)
+def create_order(order: Order, db: Session = Depends(get_db)):
+    db_order = DBOrder(user_id=order.user_id, order_date=datetime.utcnow())
+    for product in order.products:
+        db_product = DBProduct(**product.dict())
+        db.add(db_product)
+        db_order.products.append(db_product)
+    db.add(db_order)
+    db.commit()
+    db.refresh(db_order)
+    return order
 
 file: /Users/qingwang/learning/python/jewelry_store/app/routes/__init__.py
 
 
 file: /Users/qingwang/learning/python/jewelry_store/app/routes/product.py
-from fastapi import APIRouter
-from app.data import products  # Assuming products is correctly imported and initialized in data.py
-from app.models import Product  # Import the Product class
+# app/routes/product.py
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
+from typing import List
+from app.models import Product as DBProduct
+from app.schemas import Product
+from app.database import get_db  # Import the get_db dependency
 
 router = APIRouter()
 
-@router.get("/")
-async def list_products():
-    return [product.__dict__ for product in products]
+@router.get("/", response_model=List[Product])
+def list_products(db: Session = Depends(get_db)):
+    products = db.query(DBProduct).all()
+    return products
 
 @router.get("/search")
-async def search_products(query: str):
-    result = [product.__dict__ for product in products if query.lower() in product.name.lower() or query.lower() in product.description.lower()]
-    return result
+def search_products(query: str, db: Session = Depends(get_db)):
+    products = db.query(DBProduct).filter(DBProduct.name.ilike(f"%{query}%") | DBProduct.description.ilike(f"%{query}%")).all()
+    return products
 
+@router.post("/", response_model=Product)
+def create_product(product: Product, db: Session = Depends(get_db)):
+    db_product = DBProduct(name=product.name, description=product.description, price=product.price,
+                         quantity=product.quantity, image_url=product.image_url)
+    db.add(db_product)
+    db.commit()
+    db.refresh(db_product)
+    return product
 

@@ -28,8 +28,3 @@ app.add_middleware(
 app.include_router(user_router, prefix="/users", tags=["users"])
 app.include_router(product_router, prefix="/products", tags=["products"])
 app.include_router(order_router, prefix="/orders", tags=["orders"])
-
-# Handle exceptions
-@app.exception_handler(Exception)
-async def exception_handler(request, exc):
-    return JSONResponse(status_code=500, content={"message": "Internal server error"})

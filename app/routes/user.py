@@ -2,8 +2,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.models import User as DBUser
-from app.schemas import User, UserLogin  # Import the UserLogin schema
-from app.database import get_db
+from app.schemas import User
+from app.database import get_db  # Import the get_db dependency
 
 router = APIRouter()
 
@@ -16,7 +16,7 @@ def register_user(user: User, db: Session = Depends(get_db)):
     return user
 
 @router.post("/login")
-def login(user_data: UserLogin, db: Session = Depends(get_db)):  # Use the UserLogin schema
+def login(user_data: User, db: Session = Depends(get_db)):
     db_user = db.query(DBUser).filter(DBUser.username == user_data.username, DBUser.password == user_data.password).first()
     if db_user is None:
         raise HTTPException(status_code=401, detail="Invalid username or password")

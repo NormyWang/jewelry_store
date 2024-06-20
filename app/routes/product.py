@@ -2,8 +2,8 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from typing import List
-from app.models import Product as DBProduct
-from app.schemas import Product
+from app.models.product_model import Product as DBProduct
+from app.schemas.product_schemau import Product
 from app.database import get_db  # Import the get_db dependency
 
 router = APIRouter()
@@ -26,3 +26,6 @@ def create_product(product: Product, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(db_product)
     return product
+
+
+
