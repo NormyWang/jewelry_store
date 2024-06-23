@@ -2,8 +2,9 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from datetime import datetime
-from app.models import Order as DBOrder, Product as DBProduct
-from app.schemas import Order
+from app.models.order_model import Order as DBOrder
+from app.models.product_model import Product as DBProduct
+from app.schemas.order_schema import Order
 from app.database import get_db  # Import the get_db dependency
 
 router = APIRouter()
