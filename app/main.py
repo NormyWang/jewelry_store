@@ -3,9 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 # Import route files
-from app.routes.user import router as user_router
-from app.routes.product import router as product_router
-from app.routes.order import router as order_router
+from app.routes import main_router
 
 # FastAPI app
 app = FastAPI()
@@ -14,6 +12,7 @@ app = FastAPI()
 origins = [
     "http://normyartistry.com",
     "http://localhost:8080",
+    "http://localhost:8081"
 ]
 
 app.add_middleware(
@@ -25,6 +24,4 @@ app.add_middleware(
 )
 
 # Mount the route files
-app.include_router(user_router, prefix="/users", tags=["users"])
-app.include_router(product_router, prefix="/products", tags=["products"])
-app.include_router(order_router, prefix="/orders", tags=["orders"])
+app.include_router(main_router)

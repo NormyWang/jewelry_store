@@ -2,7 +2,7 @@
 from pydantic import BaseModel
 from typing import Optional
 
-class User(BaseModel):
+class UserRegistrationSchema(BaseModel):
     username: str
     email: Optional[str]
     address: Optional[str]
@@ -10,6 +10,6 @@ class User(BaseModel):
     class Config:
         orm_mode = True
 
-class UserLogin(BaseModel):
+class UserLoginSchema(BaseModel):
     username: str
     password: str

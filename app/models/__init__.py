@@ -1,4 +1,4 @@
 # app/models/__init__.py
-from .user_model import User
-from .product_model import Product
-from .order_model import Order, OrderProduct
+from .user_model import UserModel
+from .product_model import ProductModel
+from .order_model import OrderModel, OrderProductModel

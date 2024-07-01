@@ -2,13 +2,13 @@
 from pydantic import BaseModel
 from typing import List
 from datetime import datetime
-from app.schemas.product_schema import Product
+from app.schemas.product_schema import ProductSchema
 
-class Order(BaseModel):
+class OrderSchema(BaseModel):
     order_id: int
     user_id: int
     order_date: datetime
-    products: List[Product]
+    products: List[ProductSchema]
 
     class Config:
         orm_mode = True
