@@ -1,5 +1,6 @@
 # app/models/product_model.py
 from sqlalchemy import Column, Integer, String, Float
+from sqlalchemy.orm import relationship
 from app.database import Base
 
 class ProductModel(Base):
@@ -11,3 +12,5 @@ class ProductModel(Base):
     price = Column(Float)
     quantity = Column(Integer)
     image_url = Column(String)
+
+    orders = relationship("OrderModel", secondary="order_products", back_populates="products")

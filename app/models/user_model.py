@@ -1,5 +1,6 @@
 # app/models/user_model.py
 from sqlalchemy import Column, Integer, String
+from sqlalchemy.orm import relationship
 from app.database import Base
 
 class UserModel(Base):
@@ -10,3 +11,5 @@ class UserModel(Base):
     email = Column(String, unique=True, index=True)
     address = Column(String)
     password = Column(String)
+
+    orders = relationship("OrderModel", back_populates="user")

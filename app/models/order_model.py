@@ -10,8 +10,8 @@ class OrderModel(Base):
     user_id = Column(Integer, ForeignKey("users.id"))
     order_date = Column(DateTime)
 
-    user = relationship("User")
-    products = relationship("Product", secondary="order_products")
+    user = relationship("UserModel", back_populates="orders")
+    products = relationship("ProductModel", secondary="order_products")
 
 class OrderProductModel(Base):
     __tablename__ = "order_products"
